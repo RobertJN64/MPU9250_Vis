@@ -35,7 +35,7 @@ def disp_func(end, killflag):
 
 def main():
     manager = multiprocessing.Manager()
-    end = manager.list([1, 1, 5])
+    end = manager.list([max_val/2, max_val/2, max_val/2])
     killflag = manager.list([False])
 
     p = multiprocessing.Process(target=disp_func, args=(end, killflag))
