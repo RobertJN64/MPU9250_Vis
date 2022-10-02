@@ -9,13 +9,12 @@ port = 'COM5'
 max_val = 400
 acc_mul = 200
 
-def disp_func(mag_end, acc_end, killflag):
+def disp_func(mag_end, killflag):
     print("Disp func running")
     start = (0, 0, 0)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     mag_q = ax.quiver(start[0], start[1], start[2], mag_end[0], mag_end[1], mag_end[2], color='blue')
-    acc_q = ax.quiver(start[0], start[1], start[2], acc_end[0], acc_end[1], acc_end[2], color='red')
 
     ax.set_xlim([-max_val, max_val])
     ax.set_ylim([-max_val, max_val])
@@ -33,9 +32,8 @@ def disp_func(mag_end, acc_end, killflag):
             break  # handle exit
 
         mag_q.remove()
-        acc_q.remove()
         mag_q = ax.quiver(start[0], start[1], start[2], mag_end[0], mag_end[1], mag_end[2], color='blue')
-        acc_q = ax.quiver(start[0], start[1], start[2], acc_end[0], acc_end[1], acc_end[2], color='red')
+        ax.scatter(mag_end[0], mag_end[1], mag_end[2], c='red')
 
     killflag[0] = True
     print("Draw loop done")
@@ -45,10 +43,9 @@ def main():
     mpu = None
     manager = multiprocessing.Manager()
     mag_end = manager.list([max_val/2, max_val/2, max_val/2])
-    acc_end = manager.list([-max_val / 2, -max_val / 2, -max_val / 2])
     killflag = manager.list([False])
 
-    p = multiprocessing.Process(target=disp_func, args=(mag_end, acc_end, killflag))
+    p = multiprocessing.Process(target=disp_func, args=(mag_end, killflag))
     p.start()
     sleep(1)
 
@@ -63,16 +60,13 @@ def main():
             line = input()
 
         if '$' in line:
-            new = tuple(map(float, line.replace('$', '').split(' ')))
+            _, line = line.split(':')
+            line = line.removeprefix(' ')
+            new = tuple(map(float, line.split(' ')))
             mag_end[0] = new[0]
             mag_end[1] = new[1]
             mag_end[2] = new[2]
 
-        elif '#' in line:
-            new = tuple(map(float, line.replace('#', '').split(' ')))
-            acc_end[0] = new[0] * acc_mul
-            acc_end[1] = new[1] * acc_mul
-            acc_end[2] = new[2] * acc_mul
         else:
             print(line) #for serial debug
 
